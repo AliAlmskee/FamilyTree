@@ -25,7 +25,6 @@ class FamilyMember extends Model
         'address' => 'array',
     ];
 
-    // Relationships
     public function mother()
     {
         return $this->belongsTo(FamilyMember::class, 'mother_id');
@@ -43,8 +42,7 @@ class FamilyMember extends Model
 
     public function children()
     {
-        return $this->hasMany(FamilyMember::class, 'mother_id')
-            ->orWhere('father_id', $this->id);
+        return $this->hasMany(FamilyMember::class, 'father_id');
     }
 
     public function hasChildByName(string $name): bool

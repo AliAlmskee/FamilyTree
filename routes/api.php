@@ -27,7 +27,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('search')->group(function () {
     Route::get('/name', [FamilySearchController::class, 'searchByName']);
     Route::get('/father-child', [FamilySearchController::class, 'searchByFatherAndChild']);
-    Route::get('/ancestry', [FamilySearchController::class, 'getAncestry']);
+    Route::get('/ancestry/{id}', [FamilySearchController::class, 'getAncestry']);
+    Route::get('/descendants/{id}', [FamilySearchController::class, 'getDescendants']);
+
 });
 
 Route::post('/family-tree/import-excel', [FamilyTreeImportController::class, 'import']);

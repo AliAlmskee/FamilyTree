@@ -32,10 +32,16 @@ class FamilySearchController extends Controller
         return response()->json($results);
     }
 
-    public function getAncestry(Request $request)
+    public function getAncestry($id)
     {
-        $memberId = $request->input('member_id');
-        $results = $this->searchService->getAncestry($memberId);
+        $results = $this->searchService->getAncestry($id);
+        
+        return response()->json($results);
+    }
+
+    public function getDescendants($id)
+    {
+        $results = $this->searchService->getDescendants($id);
         
         return response()->json($results);
     }

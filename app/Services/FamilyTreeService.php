@@ -37,14 +37,13 @@ class FamilyTreeService
     /**
      * Get all descendants (children, grandchildren, etc.)
      */
-    public function getDescendants(int $memberId): Collection
+    public function getDescendants(int $memberId)
     {
-        $member = FamilyMember::with('children')->find($memberId);
+        $member = FamilyMember::find($memberId);
         $descendants = collect();
-        
         $this->getDescendantsRecursive($member, $descendants);
         
-        return $descendants;
+        return $member ;
     }
 
     /**
@@ -57,5 +56,6 @@ class FamilyTreeService
             $this->getDescendantsRecursive($child, $descendants);
         }
     }
+
 
 }

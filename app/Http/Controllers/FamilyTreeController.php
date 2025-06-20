@@ -24,7 +24,4 @@ class FamilyTreeController extends Controller
         return response()->json($member);
     }
 
-    
-
- 
 }

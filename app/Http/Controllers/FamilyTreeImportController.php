@@ -32,7 +32,6 @@ class FamilyTreeImportController extends Controller
                 return array_values($row);
             }, $data);
 
-            // Build the family tree
             $root = $this->treeBuilder->buildFromExcelData($excelData);
             
             return response()->json([
