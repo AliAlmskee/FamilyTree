@@ -16,6 +16,7 @@ class FamilyMember extends Model
         'gender',
         'address',
         'life_description',
+        'is_alive',
         'mother_id',
         'father_id',
         'spouse_id'
@@ -23,6 +24,11 @@ class FamilyMember extends Model
 
     protected $casts = [
         'address' => 'array',
+        'is_alive' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'is_alive' => true,
     ];
 
     public function mother()
@@ -43,6 +49,24 @@ class FamilyMember extends Model
     public function children()
     {
         return $this->hasMany(FamilyMember::class, 'father_id');
+    }
+
+    public function childrenByFather()
+    {
+        return $this->hasMany(FamilyMember::class, 'father_id');
+    }
+
+    public function childrenByMother()
+    {
+        return $this->hasMany(FamilyMember::class, 'mother_id');
+    }
+
+    public function allChildren()
+    {
+        return FamilyMember::where(function($query) {
+            $query->where('father_id', $this->id)
+                  ->orWhere('mother_id', $this->id);
+        });
     }
 
     public function hasChildByName(string $name): bool

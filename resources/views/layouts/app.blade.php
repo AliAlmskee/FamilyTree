@@ -29,29 +29,63 @@
     <!-- Navigation -->
     <nav class="gradient-bg shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+            <div class="flex justify-between h-12 sm:h-14 lg:h-16">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <a href="{{ url('/') }}" class="text-white text-xl font-bold flex items-center">
-                            <img src="{{ asset('img/Aboujaib Logo.png') }}" alt="Aboujaib Logo" class="h-8 w-auto ml-2">
-                            عائِلَةُ أَبُو جَيْب
+                        <a href="{{ url('/') }}" class="text-white text-base sm:text-lg lg:text-xl font-bold flex items-center">
+                            <img src="{{ asset('img/Aboujaib Logo.png') }}" alt="Aboujaib Logo" class="h-6 w-auto sm:h-7 lg:h-8 ml-2">
+                            <span class="hidden sm:inline">عائِلَةُ أَبُو جَيْب</span>
+                            <span class="sm:hidden">أبو جيب</span>
                         </a>
                     </div>
                 </div>
                 
-                <div class="flex items-center space-x-4">
-                    <a href="{{ url('/') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-home ml-1"></i> الرئيسية
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <a href="{{ route('family-tree.index') }}" class="text-white hover:text-gray-200 px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200">
+                        <i class="fas fa-users ml-1"></i>
+                        <span class="hidden sm:inline">أفراد العائلة</span>
+                        <span class="sm:hidden">العائلة</span>
                     </a>
-                    <a href="{{ route('family-tree.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-users ml-1"></i> أفراد العائلة
+                    <a href="{{ route('search.index') }}" class="text-white hover:text-gray-200 px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200">
+                        <i class="fas fa-search ml-1"></i>
+                        <span class="hidden sm:inline">بحث</span>
+                        <span class="sm:hidden">بحث</span>
                     </a>
-                    <a href="{{ route('search.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-search ml-1"></i> بحث
+                    <a href="{{ route('news.index') }}" class="text-white hover:text-gray-200 px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200">
+                        <i class="fas fa-newspaper ml-1"></i>
+                        <span class="hidden sm:inline">الأخبار</span>
+                        <span class="sm:hidden">الأخبار</span>
                     </a>
-                    <a href="{{ route('news.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-newspaper ml-1"></i> الأخبار
-                    </a>
+                    
+                    @auth
+                        @if(auth()->user()->role === 'admin')
+                            <!-- Admin Dashboard Link -->
+                            <a href="{{ route('admin.dashboard') }}" class="text-white hover:text-gray-200 px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 bg-red-600 bg-opacity-50 rounded">
+                                <i class="fas fa-cog ml-1"></i>
+                                <span class="hidden sm:inline">الإدارة</span>
+                                <span class="sm:hidden">الإدارة</span>
+                            </a>
+                            
+                            <!-- Admin Logout -->
+                            <div class="relative group">
+                                <button class="text-white hover:text-gray-200 px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 flex items-center">
+                                    <i class="fas fa-user-shield ml-1"></i>
+                                    <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
+                                    <span class="sm:hidden">مدير</span>
+                                    <i class="fas fa-chevron-down mr-1 text-xs"></i>
+                                </button>
+                                <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                    <form method="POST" action="{{ route('logout') }}" class="block">
+                                        @csrf
+                                        <button type="submit" class="block w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-sign-out-alt ml-2"></i>
+                                            تسجيل الخروج
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endif   
+                    @endauth
                 </div>
             </div>
         </div>
@@ -75,15 +109,15 @@
     @endif
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         @yield('content')
     </main>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-white mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
             <div class="text-center">
-                <p>&copy; {{ date('Y') }} نظام شجرة العائلة. جميع الحقوق محفوظة.</p>
+                <p class="text-sm sm:text-base">&copy; {{ date('Y') }} نظام شجرة العائلة. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>

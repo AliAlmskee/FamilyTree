@@ -17,6 +17,7 @@ return new class extends Migration
         $table->string('last_name');
         $table->enum('gender', ['male', 'female']);
         $table->string('address')->nullable(); 
+        $table->boolean('is_alive');
         
         // Relationship IDs
         $table->foreignId('mother_id')->nullable()->constrained('family_members');
