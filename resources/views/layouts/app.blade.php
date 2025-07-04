@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Family Tree') - Family Tree System</title>
+    <title>@yield('title', 'شجرة العائلة') - نظام شجرة العائلة</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -32,25 +32,25 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <a href="{{ url('/') }}" class="text-white text-xl font-bold">
-                            <i class="fas fa-tree mr-2"></i>
-                            Family Tree
+                        <a href="{{ url('/') }}" class="text-white text-xl font-bold flex items-center">
+                            <img src="{{ asset('img/Aboujaib Logo.png') }}" alt="Aboujaib Logo" class="h-8 w-auto ml-2">
+                            عائِلَةُ أَبُو جَيْب
                         </a>
                     </div>
                 </div>
                 
                 <div class="flex items-center space-x-4">
                     <a href="{{ url('/') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-home mr-1"></i> Dashboard
+                        <i class="fas fa-home ml-1"></i> الرئيسية
                     </a>
                     <a href="{{ route('family-tree.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-users mr-1"></i> Family Members
+                        <i class="fas fa-users ml-1"></i> أفراد العائلة
                     </a>
                     <a href="{{ route('search.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-search mr-1"></i> Search
+                        <i class="fas fa-search ml-1"></i> بحث
                     </a>
                     <a href="{{ route('news.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-newspaper mr-1"></i> News
+                        <i class="fas fa-newspaper ml-1"></i> الأخبار
                     </a>
                 </div>
             </div>
@@ -83,7 +83,7 @@
     <footer class="bg-gray-800 text-white mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="text-center">
-                <p>&copy; {{ date('Y') }} Family Tree System. All rights reserved.</p>
+                <p>&copy; {{ date('Y') }} نظام شجرة العائلة. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>

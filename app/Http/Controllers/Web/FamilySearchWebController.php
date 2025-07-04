@@ -35,7 +35,7 @@ class FamilySearchWebController extends Controller
         
         $results = $this->searchService->searchByFatherAndChild($childName, $fatherName);
         
-        $name = "Child: {$childName}, Father: {$fatherName}";
+        $name = "الابن: {$childName}, الأب: {$fatherName}";
 
         return view('search.results', compact('results', 'name'));
     }

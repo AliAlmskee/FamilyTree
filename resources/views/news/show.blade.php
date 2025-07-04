@@ -11,7 +11,7 @@
             @endif
             <div class="p-6 md:p-8">
                 <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ $newsItem->title }}</h1>
-                <p class="text-sm text-gray-500 mb-6">Published on {{ $newsItem->created_at->format('F j, Y') }}</p>
+                <p class="text-sm text-gray-500 mb-6">نشر في {{ $newsItem->created_at->format('F j, Y') }}</p>
                 <div class="prose prose-lg max-w-none text-gray-700">
                     {!! nl2br(e($newsItem->content)) !!}
                 </div>
@@ -20,8 +20,8 @@
 
         <div class="mt-8 text-center">
             <a href="{{ route('news.index') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Back to News
+                <i class="fas fa-arrow-right mr-2"></i>
+                العودة إلى الأخبار
             </a>
         </div>
     </div>

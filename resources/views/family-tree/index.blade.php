@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Family Members')
+@section('title', 'أفراد العائلة')
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Family Members</h1>
-            <p class="text-gray-600 mt-1">Browse and manage your family tree members</p>
+            <h1 class="text-3xl font-bold text-gray-900">أفراد العائلة</h1>
+            <p class="text-gray-600 mt-1">تصفح وإدارة أفراد شجرة عائلتك</p>
         </div>
     </div>
 
@@ -18,12 +18,12 @@
             <div class="flex-1">
                 <input type="text" 
                        name="name" 
-                       placeholder="Search by name..." 
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       placeholder="البحث بالاسم..." 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right">
             </div>
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center">
-                <i class="fas fa-search mr-2"></i>
-                Search
+                <i class="fas fa-search ml-2"></i>
+                بحث
             </button>
         </form>
     </div>
@@ -31,7 +31,7 @@
     <!-- Members Table -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">All Family Members</h2>
+            <h2 class="text-xl font-semibold text-gray-900">كل أفراد العائلة</h2>
         </div>
         
         @if($members->count() > 0)
@@ -39,26 +39,26 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Member
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Gender
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Father
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Mother
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Spouse
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Children
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                الفرد
                             </th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
+                                الجنس
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                الأب
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                الأم
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                الزوج/الزوجة
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                الأبناء
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                الإجراءات
                             </th>
                         </tr>
                     </thead>
@@ -70,7 +70,7 @@
                                         <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
                                             {{ strtoupper(substr($member->first_name, 0, 1)) }}
                                         </div>
-                                        <div class="ml-4">
+                                        <div class="mr-4">
                                             <div class="text-sm font-medium text-gray-900">
                                                 {{ $member->first_name }} {{ $member->last_name }}
                                             </div>
@@ -84,8 +84,8 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $member->gender === 'male' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' }}">
-                                        <i class="fas fa-{{ $member->gender === 'male' ? 'male' : 'female' }} mr-1"></i>
-                                        {{ ucfirst($member->gender) }}
+                                        <i class="fas fa-{{ $member->gender === 'male' ? 'male' : 'female' }} ml-1"></i>
+                                        {{ $member->gender === 'male' ? 'ذكر' : 'أنثى' }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -116,9 +116,9 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $member->children->count() }} children
+                                    {{ $member->children->count() }} أبناء
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                                     <div class="flex justify-end space-x-2">
                                         <a href="{{ route('family-tree.show', $member->id) }}" 
                                            class="text-blue-600 hover:text-blue-900">
@@ -147,12 +147,12 @@
         @else
             <div class="text-center py-12">
                 <i class="fas fa-users text-6xl text-gray-300 mb-4"></i>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No family members found</h3>
-                <p class="text-gray-500 mb-6">Start building your family tree by importing data from an Excel file.</p>
-                <a href="{{ route('import.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
-                    <i class="fas fa-upload mr-2"></i>
-                    Import Family Data
-                </a>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">لم يتم العثور على أفراد من العائلة</h3>
+                <p class="text-gray-500 mb-6">ابدأ في بناء شجرة عائلتك عن طريق استيراد البيانات من ملف Excel.</p>
+                {{-- <a href="{{ route('import.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
+                    <i class="fas fa-upload ml-2"></i>
+                    استيراد بيانات العائلة
+                </a> --}}
             </div>
         @endif
     </div>

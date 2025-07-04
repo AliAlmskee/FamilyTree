@@ -1,127 +1,94 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
+@section('title', 'لوحة التحكم')
 
 @section('content')
 <div class="space-y-8">
     <!-- Header -->
     <div class="text-center">
-        <h1 class="text-4xl font-bold text-gray-900 mb-4">Family Tree Dashboard</h1>
-        <p class="text-lg text-gray-600">Welcome to your family tree management system</p>
+        <h1 class="text-4xl font-bold text-gray-800">مرحباً بك في لوحة تحكم شجرة العائلة</h1>
+        <p class="text-xl text-gray-600 mt-2">نظرة عامة على نظام شجرة العائلة الخاص بك</p>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-lg shadow-md p-6 card-hover">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <i class="fas fa-users text-2xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Total Members</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $stats['total_members'] }}</p>
-                </div>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-lg p-6 flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700">إجمالي الأفراد</h3>
+                <p class="text-4xl font-bold text-gray-900">{{ $stats['total_members'] }}</p>
             </div>
+            <i class="fas fa-users text-5xl text-blue-500 opacity-50"></i>
         </div>
-
-        <div class="bg-white rounded-lg shadow-md p-6 card-hover">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <i class="fas fa-male text-2xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Male Members</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $stats['male_members'] }}</p>
-                </div>
+        <div class="bg-white rounded-lg shadow-lg p-6 flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700">الذكور</h3>
+                <p class="text-4xl font-bold text-gray-900">{{ $stats['male_count'] }}</p>
             </div>
+            <i class="fas fa-male text-5xl text-blue-500 opacity-50"></i>
         </div>
-
-        <div class="bg-white rounded-lg shadow-md p-6 card-hover">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-pink-100 text-pink-600">
-                    <i class="fas fa-female text-2xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Female Members</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $stats['female_members'] }}</p>
-                </div>
+        <div class="bg-white rounded-lg shadow-lg p-6 flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700">الإناث</h3>
+                <p class="text-4xl font-bold text-gray-900">{{ $stats['female_count'] }}</p>
             </div>
+            <i class="fas fa-female text-5xl text-pink-500 opacity-50"></i>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-6 flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700">الأجيال</h3>
+                <p class="text-4xl font-bold text-gray-900">{{ $stats['generations'] }}</p>
+            </div>
+            <i class="fas fa-layer-group text-5xl text-green-500 opacity-50"></i>
         </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <a href="{{ route('family-tree.index') }}" class="bg-white rounded-lg shadow-md p-6 card-hover text-center">
-            <div class="p-3 rounded-full bg-purple-100 text-purple-600 mx-auto w-16 h-16 flex items-center justify-center mb-4">
-                <i class="fas fa-users text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">View All Members</h3>
-            <p class="text-gray-600">Browse and manage family members</p>
-        </a>
-
-        <a href="{{ route('search.index') }}" class="bg-white rounded-lg shadow-md p-6 card-hover text-center">
-            <div class="p-3 rounded-full bg-blue-100 text-blue-600 mx-auto w-16 h-16 flex items-center justify-center mb-4">
-                <i class="fas fa-search text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Search Family</h3>
-            <p class="text-gray-600">Find specific family members</p>
-        </a>
-
-        <a href="{{ route('import.index') }}" class="bg-white rounded-lg shadow-md p-6 card-hover text-center">
-            <div class="p-3 rounded-full bg-green-100 text-green-600 mx-auto w-16 h-16 flex items-center justify-center mb-4">
-                <i class="fas fa-upload text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Import Data</h3>
-            <p class="text-gray-600">Upload Excel files with family data</p>
-        </a>
-
-        <div class="bg-white rounded-lg shadow-md p-6 card-hover text-center">
-            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 mx-auto w-16 h-16 flex items-center justify-center mb-4">
-                <i class="fas fa-chart-line text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Analytics</h3>
-            <p class="text-gray-600">View family tree statistics</p>
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6">إجراءات سريعة</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <a href="{{ route('family-tree.index') }}" class="block p-6 bg-blue-50 hover:bg-blue-100 rounded-lg transition duration-300">
+                <i class="fas fa-list text-4xl text-blue-600 mb-4"></i>
+                <h3 class="font-semibold text-lg text-gray-800">عرض كل الأفراد</h3>
+                <p class="text-gray-600">تصفح القائمة الكاملة للعائلة</p>
+            </a>
+            <a href="{{ route('search.index') }}" class="block p-6 bg-green-50 hover:bg-green-100 rounded-lg transition duration-300">
+                <i class="fas fa-search text-4xl text-green-600 mb-4"></i>
+                <h3 class="font-semibold text-lg text-gray-800">بحث</h3>
+                <p class="text-gray-600">ابحث عن أفراد محددين</p>
+            </a>
+            <a href="#" class="block p-6 bg-purple-50 hover:bg-purple-100 rounded-lg transition duration-300">
+                <i class="fas fa-plus-circle text-4xl text-purple-600 mb-4"></i>
+                <h3 class="font-semibold text-lg text-gray-800">إضافة فرد جديد</h3>
+                <p class="text-gray-600">أضف فردًا جديدًا إلى الشجرة</p>
+            </a>
         </div>
     </div>
 
-    <!-- Recent Members -->
-    <div class="bg-white rounded-lg shadow-md">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Recent Family Members</h2>
-        </div>
-        <div class="p-6">
-            @if($stats['recent_members']->count() > 0)
-                <div class="space-y-4">
-                    @foreach($stats['recent_members'] as $member)
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
-                                    {{ strtoupper(substr($member->first_name, 0, 1)) }}
-                                </div>
-                                <div class="ml-4">
-                                    <h3 class="text-lg font-medium text-gray-900">
-                                        {{ $member->first_name }} {{ $member->last_name }}
-                                    </h3>
-                                    <p class="text-sm text-gray-600">
-                                        <i class="fas fa-{{ $member->gender === 'male' ? 'male' : 'female' }} mr-1"></i>
-                                        {{ ucfirst($member->gender) }}
-                                    </p>
-                                </div>
+    <!-- Recent Additions -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6">الإضافات الأخيرة</h2>
+        @if($recent_members->count() > 0)
+            <ul class="space-y-4">
+                @foreach($recent_members as $member)
+                    <li class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-xl mr-4">
+                                {{ strtoupper(substr($member->first_name, 0, 1)) }}
                             </div>
-                            <a href="{{ route('family-tree.show', $member->id) }}" 
-                               class="text-blue-600 hover:text-blue-800 font-medium">
-                                View Details
-                            </a>
+                            <div>
+                                <a href="{{ route('family-tree.show', $member->id) }}" class="font-semibold text-lg text-blue-600 hover:text-blue-800">{{ $member->first_name }} {{ $member->last_name }}</a>
+                                <p class="text-gray-500">تمت إضافته في {{ $member->created_at->format('d-m-Y') }}</p>
+                            </div>
                         </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="text-center py-8">
-                    <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
-                    <p class="text-gray-500">No family members found. Start by importing data or adding members manually.</p>
-                </div>
-            @endif
-        </div>
+                        <span class="px-3 py-1 text-sm rounded-full {{ $member->gender === 'male' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' }}">
+                            {{ $member->gender === 'male' ? 'ذكر' : 'أنثى' }}
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <p class="text-center text-gray-500">لم يتم إضافة أي أفراد مؤخراً.</p>
+        @endif
     </div>
 </div>
 @endsection 

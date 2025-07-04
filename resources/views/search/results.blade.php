@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Search Results')
+@section('title', 'نتائج البحث')
 
 @section('content')
 <div class="space-y-6">
@@ -9,14 +9,14 @@
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
                 <a href="{{ route('search.index') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
-                    <i class="fas fa-search mr-2"></i>
-                    Search
+                    <i class="fas fa-search ml-2"></i>
+                    بحث
                 </a>
             </li>
             <li>
                 <div class="flex items-center">
-                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                    <span class="text-sm font-medium text-gray-500">Results</span>
+                    <i class="fas fa-chevron-left text-gray-400 mx-2"></i>
+                    <span class="text-sm font-medium text-gray-500">النتائج</span>
                 </div>
             </li>
         </ol>
@@ -26,25 +26,25 @@
     <div class="bg-white rounded-lg shadow-md p-6">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Search Results</h1>
+                <h1 class="text-3xl font-bold text-gray-900">نتائج البحث</h1>
                 <p class="text-gray-600 mt-1">
                     @if($results->count() > 0)
-                        Found {{ $results->count() }} family member{{ $results->count() !== 1 ? 's' : '' }} for "{{ $name }}"
+                        تم العثور على {{ $results->count() }} فرد من أفراد العائلة لـ "{{ $name }}"
                     @else
-                        No family members found for "{{ $name }}"
+                        لم يتم العثور على أفراد من العائلة لـ "{{ $name }}"
                     @endif
                 </p>
             </div>
             <div class="flex space-x-2">
                 <a href="{{ route('search.index') }}" 
                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
-                    <i class="fas fa-search mr-2"></i>
-                    New Search
+                    <i class="fas fa-search ml-2"></i>
+                    بحث جديد
                 </a>
                 <a href="{{ route('family-tree.index') }}" 
                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center">
-                    <i class="fas fa-list mr-2"></i>
-                    All Members
+                    <i class="fas fa-list ml-2"></i>
+                    كل الأفراد
                 </a>
             </div>
         </div>
@@ -57,15 +57,15 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <span class="text-blue-800 font-medium">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Search Results Summary
+                        <i class="fas fa-info-circle ml-1"></i>
+                        ملخص نتائج البحث
                     </span>
                     <span class="text-blue-700">
-                        {{ $results->count() }} result{{ $results->count() !== 1 ? 's' : '' }}
+                        {{ $results->count() }} نتيجة
                     </span>
                 </div>
                 <div class="text-sm text-blue-700">
-                    Search term: "<strong>{{ $name }}</strong>"
+                    مصطلح البحث: "<strong>{{ $name }}</strong>"
                 </div>
             </div>
         </div>
@@ -92,12 +92,12 @@
                                 @endif
                                 <div class="flex items-center mt-2 space-x-2">
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $member->gender === 'male' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' }}">
-                                        <i class="fas fa-{{ $member->gender === 'male' ? 'male' : 'female' }} mr-1"></i>
-                                        {{ ucfirst($member->gender) }}
+                                        <i class="fas fa-{{ $member->gender === 'male' ? 'male' : 'female' }} ml-1"></i>
+                                        {{ $member->gender === 'male' ? 'ذكر' : 'أنثى' }}
                                     </span>
                                     @if($member->birth_date)
                                         <span class="text-xs text-gray-500">
-                                            <i class="fas fa-birthday-cake mr-1"></i>
+                                            <i class="fas fa-birthday-cake ml-1"></i>
                                             {{ \Carbon\Carbon::parse($member->birth_date)->format('Y') }}
                                         </span>
                                     @endif
@@ -113,7 +113,7 @@
                             @if($member->father)
                                 <div class="flex items-center text-sm">
                                     <i class="fas fa-male text-blue-600 mr-2 w-4"></i>
-                                    <span class="text-gray-600 mr-2">Father:</span>
+                                    <span class="text-gray-600 ml-2">الأب:</span>
                                     <a href="{{ route('family-tree.show', $member->father->id) }}" 
                                        class="text-blue-600 hover:text-blue-800">
                                         {{ $member->father->first_name }} {{ $member->father->last_name }}
@@ -124,7 +124,7 @@
                             @if($member->mother)
                                 <div class="flex items-center text-sm">
                                     <i class="fas fa-female text-pink-600 mr-2 w-4"></i>
-                                    <span class="text-gray-600 mr-2">Mother:</span>
+                                    <span class="text-gray-600 ml-2">الأم:</span>
                                     <a href="{{ route('family-tree.show', $member->mother->id) }}" 
                                        class="text-blue-600 hover:text-blue-800">
                                         {{ $member->mother->first_name }} {{ $member->mother->last_name }}
@@ -135,7 +135,7 @@
                             @if($member->spouse)
                                 <div class="flex items-center text-sm">
                                     <i class="fas fa-heart text-red-600 mr-2 w-4"></i>
-                                    <span class="text-gray-600 mr-2">Spouse:</span>
+                                    <span class="text-gray-600 ml-2">الزوج/الزوجة:</span>
                                     <a href="{{ route('family-tree.show', $member->spouse->id) }}" 
                                        class="text-blue-600 hover:text-blue-800">
                                         {{ $member->spouse->first_name }} {{ $member->spouse->last_name }}
@@ -146,7 +146,7 @@
                             @if($member->children->count() > 0)
                                 <div class="flex items-center text-sm">
                                     <i class="fas fa-baby text-green-600 mr-2 w-4"></i>
-                                    <span class="text-gray-600 mr-2">Children:</span>
+                                    <span class="text-gray-600 ml-2">الأبناء:</span>
                                     <span class="text-gray-900">{{ $member->children->count() }}</span>
                                 </div>
                             @endif
@@ -164,8 +164,8 @@
                         <div class="flex space-x-2 pt-4 border-t border-gray-200">
                             <a href="{{ route('family-tree.show', $member->id) }}" 
                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center px-3 py-2 rounded text-sm">
-                                <i class="fas fa-eye mr-1"></i>
-                                View Profile
+                                <i class="fas fa-eye ml-1"></i>
+                                عرض الملف الشخصي
                             </a>
                             <a href="{{ route('family-tree.ancestry', $member->id) }}" 
                                class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">
@@ -187,29 +187,29 @@
             <div class="mb-6">
                 <i class="fas fa-search text-6xl text-gray-300"></i>
             </div>
-            <h3 class="text-xl font-medium text-gray-900 mb-2">No family members found</h3>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">لم يتم العثور على أفراد من العائلة</h3>
             <p class="text-gray-600 mb-6">
-                We couldn't find any family members matching "<strong>{{ $name }}</strong>".
+                لم نتمكن من العثور على أي فرد من أفراد العائلة يطابق "<strong>{{ $name }}</strong>".
             </p>
             <div class="space-y-4">
-                <p class="text-sm text-gray-500">Try these suggestions:</p>
+                <p class="text-sm text-gray-500">جرب هذه الاقتراحات:</p>
                 <ul class="text-sm text-gray-500 space-y-1">
-                    <li>• Check the spelling of the name</li>
-                    <li>• Try searching with just the first name or last name</li>
-                    <li>• Use partial names for broader results</li>
-                    <li>• Check if the person might be listed under a different name</li>
+                    <li>• تحقق من تهجئة الاسم</li>
+                    <li>• حاول البحث بالاسم الأول أو اسم العائلة فقط</li>
+                    <li>• استخدم أسماء جزئية لنتائج أوسع</li>
+                    <li>• تحقق مما إذا كان الشخص قد يكون مدرجًا تحت اسم مختلف</li>
                 </ul>
             </div>
             <div class="mt-8 space-x-4">
                 <a href="{{ route('search.index') }}" 
                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
-                    <i class="fas fa-search mr-2"></i>
-                    Try Another Search
+                    <i class="fas fa-search ml-2"></i>
+                    جرب بحثًا آخر
                 </a>
                 <a href="{{ route('family-tree.index') }}" 
                    class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
-                    <i class="fas fa-list mr-2"></i>
-                    View All Members
+                    <i class="fas fa-list ml-2"></i>
+                    عرض كل الأفراد
                 </a>
             </div>
         </div>
@@ -221,12 +221,12 @@
             <div class="flex items-start">
                 <i class="fas fa-lightbulb text-yellow-600 mt-1 mr-3"></i>
                 <div>
-                    <h3 class="text-lg font-medium text-yellow-900 mb-2">Search Tips</h3>
+                    <h3 class="text-lg font-medium text-yellow-900 mb-2">نصائح للبحث</h3>
                     <ul class="text-yellow-800 space-y-1">
-                        <li>• Click on any family member's name to view their full profile</li>
-                        <li>• Use the arrow buttons to explore ancestry (↑) or descendants (↓)</li>
-                        <li>• Try different search terms to find more family members</li>
-                        <li>• Check the "All Members" page to browse the complete family tree</li>
+                        <li>• انقر على اسم أي فرد من أفراد العائلة لعرض ملفه الشخصي الكامل</li>
+                        <li>• استخدم أزرار الأسهم لاستكشاف الأسلاف (↑) أو الأبناء (↓)</li>
+                        <li>• جرب مصطلحات بحث مختلفة للعثور على المزيد من أفراد العائلة</li>
+                        <li>• تحقق من صفحة "كل الأفراد" لتصفح شجرة العائلة الكاملة</li>
                     </ul>
                 </div>
             </div>
@@ -248,13 +248,13 @@
         });
 
         // Add hover effects for result cards
-        document.querySelectorAll('.hover\\:shadow-lg').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px)';
+        const cards = document.querySelectorAll('.transition-shadow');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('shadow-xl');
             });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('shadow-xl');
             });
         });
     });

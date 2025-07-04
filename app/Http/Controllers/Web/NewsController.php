@@ -48,7 +48,7 @@ class NewsController extends Controller
             'is_approved' => false, // Default to not approved
         ]);
 
-        return redirect()->route('news.index')->with('success', 'News article submitted for approval.');
+        return redirect()->route('news.index')->with('success', 'تم إرسال المقال الإخباري للموافقة.');
     }
 
     /**

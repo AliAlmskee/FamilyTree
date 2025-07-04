@@ -19,61 +19,18 @@ class FamilyTreeService
             ->get();
     }
 
-    public function getAncestry(int $memberId): array
+    public function getAncestry(int $memberId): Collection
     {
-        $member = FamilyMember::find($memberId);
-        if (!$member) {
-            return [];
-        }
-
-        $ancestry = [];
-        $generation = 1;
-        
-        // Get parents
-        $parents = collect();
-        if ($member->father) {
-            $parents->push($member->father);
-        }
-        if ($member->mother) {
-            $parents->push($member->mother);
-        }
-        
-        if ($parents->isNotEmpty()) {
-            $ancestry[$generation] = $parents;
-            $generation++;
-        }
-
-        // Get grandparents
-        $grandparents = collect();
-        foreach ($parents as $parent) {
-            if ($parent->father) {
-                $grandparents->push($parent->father);
+        $ancestry = collect();
+        $current = FamilyMember::find($memberId);
+        $visited = true ; 
+        while ($current) {
+            if ($visited) {
+                $ancestry->push($current);
+                $visited = false ; 
             }
-            if ($parent->mother) {
-                $grandparents->push($parent->mother);
-            }
+            $current = $current->father;
         }
-        
-        if ($grandparents->isNotEmpty()) {
-            $ancestry[$generation] = $grandparents;
-            $generation++;
-        }
-
-        // Get great-grandparents
-        $greatGrandparents = collect();
-        foreach ($grandparents as $grandparent) {
-            if ($grandparent->father) {
-                $greatGrandparents->push($grandparent->father);
-            }
-            if ($grandparent->mother) {
-                $greatGrandparents->push($grandparent->mother);
-            }
-        }
-        
-        if ($greatGrandparents->isNotEmpty()) {
-            $ancestry[$generation] = $greatGrandparents;
-        }
-
         return $ancestry;
     }
 
