@@ -22,18 +22,23 @@ class DashboardController extends Controller
 
     public function getFamilyStats()
     {
-        // Calculate total members
-        $totalMembers = FamilyMember::count();
-        
-        // Calculate alive members
-        $aliveMembers = FamilyMember::where('is_alive', true)->count();
-        
-        // Calculate generations (this is a simplified calculation)
+        // Get total counts with exclusions in one query
+        $stats = FamilyMember::selectRaw("
+            COUNT(id) as total_members,
+            COUNT(CASE WHEN gender = 'female' AND spouse_id IS NOT NULL THEN 1 END) as excluded_total,
+            COUNT(CASE WHEN is_alive = 1 THEN 1 END) as alive_members,
+            COUNT(CASE WHEN is_alive = 1 AND gender = 'female' AND spouse_id IS NOT NULL THEN 1 END) as excluded_alive
+        ")->first();
+    
+        $adjustedTotal = $stats->total_members - $stats->excluded_total;
+        $adjustedAlive = $stats->alive_members - $stats->excluded_alive;
+    
+        // Calculate generations (assuming you have this method)
         $generations = $this->calculateGenerations();
-        
+    
         return response()->json([
-            'total_members' => $totalMembers,
-            'alive_members' => $aliveMembers,
+            'total_members' => $adjustedTotal,
+            'alive_members' => $adjustedAlive,
             'generations' => $generations,
         ]);
     }

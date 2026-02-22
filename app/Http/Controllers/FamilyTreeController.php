@@ -33,7 +33,7 @@ class FamilyTreeController extends Controller
 
             $row = array_map(fn ($v) => trim((string) $v), $row);
 
-            // Detect header row
+            // detect header
             if (in_array('الاسم', $row)) {
 
                 if ($currentPerson) {
@@ -65,7 +65,6 @@ class FamilyTreeController extends Controller
                 continue;
             }
 
-            // Map row values to headers
             $rowValues = [];
             foreach ($headerMap as $colIndex => $field) {
                 $rowValues[$field] = $row[$colIndex] ?? null;
@@ -109,6 +108,9 @@ class FamilyTreeController extends Controller
                     'gender' => $rowValues['الجنس'] ?? null,
                 ];
             }
+            if (!empty($rowValues['اسم الام ']) && $rowValues['اسم الام '] != 0) {
+                    $currentPerson['mother_name'][] = $rowValues['اسم الام '];
+                }
         }
 
         if ($currentPerson) {
@@ -131,6 +133,18 @@ class FamilyTreeController extends Controller
 
                 $dbMap = [];
                 $nameIndex = [];
+                $personIndex = [];
+
+                /**
+                 * Build lookup of real persons from Excel
+                 * key = name + fatherExcelId
+                 */
+                foreach ($persons as $p) {
+                    if ($p['name']) {
+                        $key = $p['name'] . '_' . ($p['father_id'] ?? 0);
+                        $personIndex[$key] = $p['id'];
+                    }
+                }
 
                 /**
                  * PASS 1 — create real persons
@@ -159,22 +173,16 @@ class FamilyTreeController extends Controller
                  */
                 foreach ($persons as $p) {
 
-                    if (!$p['father_id']) {
-                        continue;
-                    }
+                    if (!$p['father_id']) continue;
 
-                    if (!isset($dbMap[$p['id']], $dbMap[$p['father_id']])) {
-                        continue;
-                    }
+                    if (!isset($dbMap[$p['id']], $dbMap[$p['father_id']])) continue;
 
                     FamilyMember::where('id', $dbMap[$p['id']])
-                        ->update([
-                            'father_id' => $dbMap[$p['father_id']]
-                        ]);
+                        ->update(['father_id' => $dbMap[$p['father_id']]]);
                 }
 
                 /**
-                 * PASS 3 — create wives + missing children
+                 * PASS 3 — wives + children
                  */
                 foreach ($persons as $p) {
 
@@ -195,33 +203,28 @@ class FamilyTreeController extends Controller
                             'spouse_id'  => $fatherDbId,
                             'address'    => null,
                             'is_alive'   => true,
-                            'birth_date' => null,
-                            'death_date' => null,
                         ]);
 
-                        $wifeId = $wife->id;
-
                         FamilyMember::where('id', $fatherDbId)
-                            ->update(['spouse_id' => $wifeId]);
+                            ->update(['spouse_id' => $wife->id]);
 
-                        $nameIndex[$wifeName] = $wifeId;
+                        $nameIndex[$wifeName] = $wife->id;
                     }
 
-                    // children
+                    // children (SAFE LOGIC)
                     foreach ($p['children'] as $child) {
 
                         $childName = $child['name'];
 
-                        $existingId = $nameIndex[$childName] ?? null;
+                        // key to detect if child exists as real person in Excel
+                        $lookupKey = $childName . '_' . ($p['id'] ?? 0);
 
-                        if ($existingId) {
-                            $existingFather = FamilyMember::where('id', $existingId)
-                                ->value('father_id');
-
-                            if ($existingFather == $fatherDbId) continue;
+                        if (isset($personIndex[$lookupKey])) {
+                            continue;
                         }
 
-                        $childObj = FamilyMember::create([
+                        // otherwise create new child
+                        FamilyMember::create([
                             'first_name' => $childName,
                             'last_name'  => 'أبو جيب',
                             'gender'     => ($child['gender'] ?? '') === 'أنثى'
@@ -232,11 +235,7 @@ class FamilyTreeController extends Controller
                             'spouse_id'  => null,
                             'address'    => null,
                             'is_alive'   => true,
-                            'birth_date' => null,
-                            'death_date' => null,
                         ]);
-
-                        $nameIndex[$childName] = $childObj->id;
                     }
                 }
 
