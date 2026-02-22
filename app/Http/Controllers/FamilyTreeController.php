@@ -3,25 +3,256 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\FamilyTreeBuilder;
-use App\Models\FamilyMember;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\FamilyMember;
 
 class FamilyTreeController extends Controller
 {
-    protected $treeBuilder;
-
-    public function __construct(FamilyTreeBuilder $treeBuilder)
+    public function processToMap(Request $request)
     {
-        $this->treeBuilder = $treeBuilder;
+        $inputPath = "C:/Users/Ali-Almski/Desktop/input.xls";
+
+        $rows = Excel::toArray([], $inputPath, null, \Maatwebsite\Excel\Excel::XLS)[1];
+
+        $persons = $this->extractBlocks($rows);
+
+        return $this->storeFamilyTree($persons);
     }
 
-    public function getFamilyMember($id)
+    /**
+     * Extract persons from Excel rows
+     */
+    private function extractBlocks(array $rows): array
     {
-        $member = FamilyMember::with(['father', 'mother', 'spouse', 'children'])
-                        ->findOrFail($id);
+        $persons = [];
+        $currentPerson = null;
+        $headerMap = [];
 
-        return response()->json($member);
+        foreach ($rows as $row) {
+
+            $row = array_map(fn ($v) => trim((string) $v), $row);
+
+            // Detect header row
+            if (in_array('الاسم', $row)) {
+
+                if ($currentPerson) {
+                    $persons[] = $currentPerson;
+                }
+
+                $headerMap = [];
+                foreach ($row as $colIndex => $title) {
+                    if ($title !== '') {
+                        $headerMap[$colIndex] = $title;
+                    }
+                }
+
+                $currentPerson = [
+                    'id'         => null,
+                    'father_id'  => null,
+                    'name'       => null,
+                    'gender'     => null,
+                    'birth_date' => null,
+                    'death_date' => null,
+                    'wives'      => [],
+                    'children'   => [],
+                ];
+
+                continue;
+            }
+
+            if (!$currentPerson || empty(array_filter($row))) {
+                continue;
+            }
+
+            // Map row values to headers
+            $rowValues = [];
+            foreach ($headerMap as $colIndex => $field) {
+                $rowValues[$field] = $row[$colIndex] ?? null;
+            }
+
+            if (!empty($rowValues['id'])) {
+                $currentPerson['id'] = (int) $rowValues['id'];
+            }
+
+            if (!empty($rowValues['father-id']) && $rowValues['father-id'] != 0) {
+                $currentPerson['father_id'] = (int) $rowValues['father-id'];
+            }
+
+            if (!empty($rowValues['الاسم'])) {
+                $currentPerson['name'] ??= $rowValues['الاسم'];
+            }
+
+            if (!empty($rowValues['الجنس']) && empty($rowValues['الأولاد'])) {
+                $currentPerson['gender'] ??= $rowValues['الجنس'];
+            }
+
+            if (!empty($rowValues['تاريخ الميلاد'])) {
+                $currentPerson['birth_date'] ??= $rowValues['تاريخ الميلاد'];
+            }
+
+            if (!empty($rowValues['تاريخ الوفاة'])) {
+                $currentPerson['death_date'] ??= $rowValues['تاريخ الوفاة'];
+            }
+
+            // wives
+            if (!empty($rowValues['اسم الزوجه'])) {
+                if (!in_array($rowValues['اسم الزوجه'], $currentPerson['wives'])) {
+                    $currentPerson['wives'][] = $rowValues['اسم الزوجه'];
+                }
+            }
+
+            // children
+            if (!empty($rowValues['الأولاد'])) {
+                $currentPerson['children'][] = [
+                    'name'   => $rowValues['الأولاد'],
+                    'gender' => $rowValues['الجنس'] ?? null,
+                ];
+            }
+        }
+
+        if ($currentPerson) {
+            $persons[] = $currentPerson;
+        }
+
+        return $persons;
     }
 
+    /**
+     * Store family tree in DB
+     */
+    private function storeFamilyTree(array $persons)
+    {
+        try {
+
+            $result = DB::transaction(function () use ($persons) {
+
+                FamilyMember::truncate();
+
+                $dbMap = [];
+                $nameIndex = [];
+
+                /**
+                 * PASS 1 — create real persons
+                 */
+                foreach ($persons as $p) {
+
+                    $member = FamilyMember::create([
+                        'first_name' => $p['name'],
+                        'last_name'  => 'أبو جيب',
+                        'gender'     => $p['gender'] === 'أنثى' ? 'female' : 'male',
+                        'address'    => null,
+                        'is_alive'   => empty($p['death_date']),
+                        'father_id'  => null,
+                        'mother_id'  => null,
+                        'spouse_id'  => null,
+                        'birth_date' => $p['birth_date'] ?? null,
+                        'death_date' => $p['death_date'] ?? null,
+                    ]);
+
+                    $dbMap[$p['id']] = $member->id;
+                    $nameIndex[$p['name']] = $member->id;
+                }
+
+                /**
+                 * PASS 2 — link fathers
+                 */
+                foreach ($persons as $p) {
+
+                    if (!$p['father_id']) {
+                        continue;
+                    }
+
+                    if (!isset($dbMap[$p['id']], $dbMap[$p['father_id']])) {
+                        continue;
+                    }
+
+                    FamilyMember::where('id', $dbMap[$p['id']])
+                        ->update([
+                            'father_id' => $dbMap[$p['father_id']]
+                        ]);
+                }
+
+                /**
+                 * PASS 3 — create wives + missing children
+                 */
+                foreach ($persons as $p) {
+
+                    $fatherDbId = $dbMap[$p['id']] ?? null;
+                    if (!$fatherDbId) continue;
+
+                    // wives
+                    foreach ($p['wives'] as $wifeName) {
+
+                        if (isset($nameIndex[$wifeName])) continue;
+
+                        $wife = FamilyMember::create([
+                            'first_name' => $wifeName,
+                            'last_name'  => ' ',
+                            'gender'     => 'female',
+                            'father_id'  => null,
+                            'mother_id'  => null,
+                            'spouse_id'  => $fatherDbId,
+                            'address'    => null,
+                            'is_alive'   => true,
+                            'birth_date' => null,
+                            'death_date' => null,
+                        ]);
+
+                        $wifeId = $wife->id;
+
+                        FamilyMember::where('id', $fatherDbId)
+                            ->update(['spouse_id' => $wifeId]);
+
+                        $nameIndex[$wifeName] = $wifeId;
+                    }
+
+                    // children
+                    foreach ($p['children'] as $child) {
+
+                        $childName = $child['name'];
+
+                        $existingId = $nameIndex[$childName] ?? null;
+
+                        if ($existingId) {
+                            $existingFather = FamilyMember::where('id', $existingId)
+                                ->value('father_id');
+
+                            if ($existingFather == $fatherDbId) continue;
+                        }
+
+                        $childObj = FamilyMember::create([
+                            'first_name' => $childName,
+                            'last_name'  => 'أبو جيب',
+                            'gender'     => ($child['gender'] ?? '') === 'أنثى'
+                                            ? 'female'
+                                            : 'male',
+                            'father_id'  => $fatherDbId,
+                            'mother_id'  => null,
+                            'spouse_id'  => null,
+                            'address'    => null,
+                            'is_alive'   => true,
+                            'birth_date' => null,
+                            'death_date' => null,
+                        ]);
+
+                        $nameIndex[$childName] = $childObj->id;
+                    }
+                }
+
+                return FamilyMember::count();
+            });
+
+            return response()->json([
+                'status'  => 'complete',
+                'created' => $result
+            ]);
+
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

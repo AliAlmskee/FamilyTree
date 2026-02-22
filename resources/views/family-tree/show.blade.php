@@ -45,11 +45,11 @@
                 <div class="flex space-x-2">
                     <a href="{{ route('family-tree.ancestry', $member->id) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
                         <i class="fas fa-arrow-up ml-2"></i>
-                        الأسلاف
+                        الأصول
                     </a>
                     <a href="{{ route('family-tree.descendants', $member->id) }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center">
                         <i class="fas fa-arrow-down ml-2"></i>
-                        الأبناء
+                        الفروع
                     </a>
                 </div>
             </div>

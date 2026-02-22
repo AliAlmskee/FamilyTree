@@ -21,7 +21,7 @@
         @if(empty($ancestry))
             <div class="text-center py-12">
                 <i class="fas fa-info-circle text-5xl text-gray-400 mb-4"></i>
-                <h2 class="text-2xl font-semibold text-gray-700">لا توجد معلومات عن الأسلاف</h2>
+                <h2 class="text-2xl font-semibold text-gray-700">لا توجد معلومات عن الأصول</h2>
                 <p class="text-gray-500 mt-2">لا يمكن العثور على والدين لـ {{ $member->first_name }}.</p>
             </div>
         @else

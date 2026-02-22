@@ -19,7 +19,9 @@ class FamilyMember extends Model
         'is_alive',
         'mother_id',
         'father_id',
-        'spouse_id'
+        'spouse_id',
+        'death_date',
+        'birth_date'
     ];
 
     protected $casts = [

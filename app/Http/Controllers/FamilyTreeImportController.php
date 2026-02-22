@@ -1,50 +1,164 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Services;
 
-use Illuminate\Http\Request;
-use App\Services\FamilyTreeBuilder;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Models\FamilyMember;
 
-class FamilyTreeImportController extends Controller
+class FamilyTreeBuilder
 {
-    protected $treeBuilder;
-
-    public function __construct(FamilyTreeBuilder $treeBuilder)
+    /**
+     * Entry point
+     */
+    public function buildFromExcelData(array $rows): void
     {
-        $this->treeBuilder = $treeBuilder;
+        $childrenIndex = $this->indexByFather($rows);
+
+        foreach ($rows as $row) {
+
+            // Header row = new root object
+            if ($this->isHeaderRow($row)) {
+                continue;
+            }
+
+            // Root person (no father)
+            if (empty(trim($row['اسم الاب'] ?? ''))) {
+                $this->buildPersonTree($row, $childrenIndex);
+            }
+        }
     }
 
-    public function import(Request $request)
-    {
-        $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls'
-        ]);
+    /**
+     * Recursive tree builder
+     */
+    private function buildPersonTree(
+        array $row,
+        array $childrenIndex,
+        ?FamilyMember $father = null
+    ): FamilyMember {
 
-        $file = $request->file('excel_file');
-        
-        try {
-            // Read Excel data into array
-            $data = Excel::toArray([], $file)[0]; // Gets first sheet as array
-            
-            // Convert to simple 2D array of values
-            $excelData = array_map(function($row) {
-                return array_values($row);
-            }, $data);
+        $name   = trim($row['الاسم']);
+        $gender = trim($row['الجنس'] ?? '');
 
-            $root = $this->treeBuilder->buildFromExcelData($excelData);
-            
-            return response()->json([
-                'message' => 'Family tree imported successfully',
-                'root_member' => $root,
-                'success' => true
-            ]);
-            
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error importing file: ' . $e->getMessage(),
-                'success' => false
-            ], 500);
+        if ($name === '') {
+            return null;
         }
+
+        // Create or get person (unique per father)
+        $person = FamilyMember::firstOrCreate(
+            [
+                'first_name' => $name,
+                'father_id'  => $father?->id,
+            ],
+            [
+                'gender' => $gender,
+            ]
+        );
+
+        // Attach father
+        if ($father && $person->father_id !== $father->id) {
+            $person->father_id = $father->id;
+            $person->save();
+        }
+
+        // Attach wife (if male)
+        if ($gender === 'ذكر' && !empty($row['اسم الزوجة'])) {
+            $this->attachWife($person, trim($row['اسم الزوجة']));
+        }
+
+        // Recurse children
+        foreach ($childrenIndex[$name] ?? [] as $childRow) {
+
+            // Stop recursion if a new header is encountered
+            if ($this->isHeaderRow($childRow)) {
+                break;
+            }
+
+            $this->buildPersonTree($childRow, $childrenIndex, $person);
+        }
+
+        return $person;
+    }
+
+    /**
+     * Index children by father name
+     */
+    private function indexByFather(array $rows): array
+    {
+        $map = [];
+
+        foreach ($rows as $row) {
+            if ($this->isHeaderRow($row)) {
+                break;
+            }
+
+            $fatherName = trim($row['اسم الاب'] ?? '');
+
+            if ($fatherName !== '') {
+                $map[$fatherName][] = $row;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Detect repeated header rows
+     */
+    private function isHeaderRow(array $row): bool
+    {
+        return trim($row['الاسم'] ?? '') === 'الاسم';
+    }
+
+    /**
+     * Attach wife to husband
+     */
+    private function attachWife(FamilyMember $husband, string $wifeName): void
+    {
+        $wife = FamilyMember::firstOrCreate(
+            ['first_name' => $wifeName],
+            ['gender' => 'أنثى']
+        );
+
+        if (method_exists($husband, 'wives')) {
+            $husband->wives()->syncWithoutDetaching($wife->id);
+        }
+    }
+
+
+    f(sub-root-id,child-name ,)
+    {
+        if(sub-root-id == null){
+        $name = $rows['الاسم']
+
+        $person = FamilyMember::firstOrCreate(
+            [
+                'first_name' => $name,
+                'father_id'  => $father?->id,
+            ],
+            [
+                'gender' => $gender,
+                last name = 'أبو جيب'
+            ]        
+                
+                f($person.id, null)
+
+            }  
+            if($row['اسم الزوجة'])  != null {
+            $wife = FamilyMember::firstOrCreate(
+                ['first_name' => $wifeName],
+                ['gender' => 'أنثى']
+            );
+            link the root to the $wife
+        
+            f($person.id, null)
+        }
+
+            if($row[' الأولاد'])  != null {
+
+
+
+
+
+
     }
 }

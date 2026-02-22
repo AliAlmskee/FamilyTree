@@ -34,3 +34,4 @@ Route::prefix('search')->group(function () {
 
 Route::post('/family-tree/import-excel', [FamilyTreeImportController::class, 'import']);
 Route::get('/family-tree/{id}', [FamilyTreeController::class, 'getFamilyMember']);
+Route::post('/add-father-id', [FamilyTreeController::class, 'processToMap']);
