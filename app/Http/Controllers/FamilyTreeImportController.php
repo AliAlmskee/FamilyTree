@@ -123,42 +123,4 @@ class FamilyTreeBuilder
             $husband->wives()->syncWithoutDetaching($wife->id);
         }
     }
-
-
-    f(sub-root-id,child-name ,)
-    {
-        if(sub-root-id == null){
-        $name = $rows['الاسم']
-
-        $person = FamilyMember::firstOrCreate(
-            [
-                'first_name' => $name,
-                'father_id'  => $father?->id,
-            ],
-            [
-                'gender' => $gender,
-                last name = 'أبو جيب'
-            ]        
-                
-                f($person.id, null)
-
-            }  
-            if($row['اسم الزوجة'])  != null {
-            $wife = FamilyMember::firstOrCreate(
-                ['first_name' => $wifeName],
-                ['gender' => 'أنثى']
-            );
-            link the root to the $wife
-        
-            f($person.id, null)
-        }
-
-            if($row[' الأولاد'])  != null {
-
-
-
-
-
-
-    }
 }

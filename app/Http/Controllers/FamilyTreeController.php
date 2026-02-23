@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -9,6 +10,26 @@ use App\Models\FamilyMember;
 
 class FamilyTreeController extends Controller
 {
+    /**
+     * Normalize a date from Excel/input. Returns null if empty or if the date
+     * is "today" (common Excel placeholder / =TODAY()), so we don't store
+     * misleading birth/death dates.
+     */
+    private function normalizeDate($value): ?string
+    {
+        if ($value === null || $value === '' || (is_string($value) && trim($value) === '')) {
+            return null;
+        }
+        try {
+            $date = Carbon::parse($value);
+            if ($date->isToday()) {
+                return null;
+            }
+            return $date->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
     public function processToMap(Request $request)
     {
         $inputPath = "C:/Users/Ali-Almski/Desktop/input.xls";
@@ -87,11 +108,11 @@ class FamilyTreeController extends Controller
             }
 
             if (!empty($rowValues['تاريخ الميلاد'])) {
-                $currentPerson['birth_date'] ??= $rowValues['تاريخ الميلاد'];
+                $currentPerson['birth_date'] = $this->normalizeDate($rowValues['تاريخ الميلاد']);
             }
 
             if (!empty($rowValues['تاريخ الوفاة'])) {
-                $currentPerson['death_date'] ??= $rowValues['تاريخ الوفاة'];
+                $currentPerson['death_date'] = $this->normalizeDate($rowValues['تاريخ الوفاة']);
             }
 
             // wives
@@ -155,8 +176,8 @@ class FamilyTreeController extends Controller
                         'father_id'  => null,
                         'mother_id'  => null,
                         'spouse_id'  => null,
-                        'birth_date' => $p['birth_date'] ?? null,
-                        'death_date' => $p['death_date'] ?? null,
+                        'birth_date' => $this->normalizeDate($p['birth_date'] ?? null),
+                        'death_date' => $this->normalizeDate($p['death_date'] ?? null),
                     ]);
 
                     $dbMap[$p['id']] = $member->id;
@@ -198,6 +219,8 @@ class FamilyTreeController extends Controller
                             'spouse_id'  => $fatherDbId,
                             'address'    => null,
                             'is_alive'   => true,
+                            'birth_date' => null,
+                            'death_date' => null,
                         ]);
 
                         FamilyMember::where('id', $fatherDbId)
@@ -230,6 +253,8 @@ class FamilyTreeController extends Controller
                             'spouse_id'  => null,
                             'address'    => null,
                             'is_alive'   => true,
+                            'birth_date' => null,
+                            'death_date' => null,
                         ]);
                     }
                 }
