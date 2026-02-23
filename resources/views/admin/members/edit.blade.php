@@ -152,7 +152,7 @@
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h5 class="font-medium text-gray-900 mb-2">الأبناء ({{ $member->allChildren()->count() }}):</h5>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            @foreach($member->allChildren()->get() as $child)
+                            @foreach($member->allChildren()->orderBy('birth_date')->get() as $child)
                             <div class="flex items-center justify-between bg-white p-2 rounded border">
                                 <span class="text-gray-700">{{ $child->first_name }} {{ $child->last_name }}</span>
                                 <a href="{{ route('admin.members.edit', $child->id) }}" class="text-blue-600 hover:text-blue-800 text-sm">
@@ -162,8 +162,6 @@
                             @endforeach
                         </div>
                     </div>
-                    @endif
-                </div>
                 @endif
                 
                 <!-- Add Child Section -->

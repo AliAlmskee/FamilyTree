@@ -125,11 +125,6 @@ class FamilyTreeController extends Controller
      */
     private function storeFamilyTree(array $persons)
     {
-        try {
-
-            $result = DB::transaction(function () use ($persons) {
-
-                FamilyMember::truncate();
 
                 $dbMap = [];
                 $nameIndex = [];
@@ -180,7 +175,7 @@ class FamilyTreeController extends Controller
                     FamilyMember::where('id', $dbMap[$p['id']])
                         ->update(['father_id' => $dbMap[$p['father_id']]]);
                 }
-
+               
                 /**
                  * PASS 3 — wives + children
                  */
@@ -239,19 +234,23 @@ class FamilyTreeController extends Controller
                     }
                 }
 
-                return FamilyMember::count();
-            });
+             /**
+             * PASS 5 — set mother_id based on father's spouse
+             */
+            $allMembers = FamilyMember::all();
 
+            foreach ($allMembers as $member) {
+                if ($member->father_id) {
+                    $father = FamilyMember::find($member->father_id);
+                    if ($father && $father->spouse_id) {
+                        $member->mother_id = $father->spouse_id;
+                        $member->save();
+                    }
+                }
+            }
             return response()->json([
-                'status'  => 'complete',
-                'created' => $result
+                'status'  => 'complete'
             ]);
 
-        } catch (\Throwable $e) {
-
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
-        }
     }
 }

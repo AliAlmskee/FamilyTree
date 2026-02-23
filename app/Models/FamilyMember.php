@@ -71,6 +71,16 @@ class FamilyMember extends Model
         });
     }
 
+    /**
+     * All children (whether this member is father or mother). Use for display.
+     */
+    public function getAllChildrenAttribute()
+    {
+        $byFather = $this->relationLoaded('children') ? $this->children : $this->children()->get();
+        $byMother = $this->relationLoaded('childrenByMother') ? $this->childrenByMother : $this->childrenByMother()->get();
+        return $byFather->merge($byMother)->unique('id')->sortBy('birth_date')->values();
+    }
+
     public function hasChildByName(string $name): bool
     {
         return $this->children()

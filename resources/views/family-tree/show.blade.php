@@ -132,18 +132,18 @@
                             <a href="{{ route('family-tree.show', $member->spouse->id) }}" class="text-blue-600 hover:underline">{{ $member->spouse->first_name }} {{ $member->spouse->last_name }}</a>
                         </div>
                         @endif
-                        @if($member->children->count() > 0)
+                        @if($member->all_children->count() > 0)
                             <div class="flex items-start">
                                 <i class="fas fa-baby text-green-600 w-6 mt-1"></i>
                                 <span class="text-gray-700 mr-3 font-semibold">الأبناء:</span>
                                 <div>
-                                    @foreach($member->children as $child)
+                                    @foreach($member->all_children as $child)
                                         <a href="{{ route('family-tree.show', $child->id) }}" class="text-blue-600 hover:underline block">{{ $child->first_name }} {{ $child->last_name }}</a>
                                     @endforeach
                                 </div>
                             </div>
                         @endif
-                        @if(!$member->spouse && $member->children->count() == 0)
+                        @if(!$member->spouse && $member->all_children->count() == 0)
                             <p class="text-gray-500">لا توجد معلومات عن الزوج/الزوجة أو الأبناء.</p>
                         @endif
                     </div>
