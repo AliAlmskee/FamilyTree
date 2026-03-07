@@ -95,10 +95,10 @@
                                         <i class="fas fa-{{ $member->gender === 'male' ? 'male' : 'female' }} ml-1"></i>
                                         {{ $member->gender === 'male' ? 'ذكر' : 'أنثى' }}
                                     </span>
-                                    @if($member->birth_date)
+                                    @if($member->parsed_birth_date)
                                         <span class="text-xs text-gray-500">
                                             <i class="fas fa-birthday-cake ml-1"></i>
-                                            {{ \Carbon\Carbon::parse($member->birth_date)->format('Y') }}
+                                            {{ $member->parsed_birth_date->format('Y') }}
                                         </span>
                                     @endif
                                 </div>

@@ -116,7 +116,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $member->children->count() }} أبناء
+                                    {{ $member->allChildren->count() }} أبناء
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                                     <div class="flex justify-end space-x-2">

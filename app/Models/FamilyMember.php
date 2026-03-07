@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,6 +29,45 @@ class FamilyMember extends Model
         'address' => 'array',
         'is_alive' => 'boolean',
     ];
+
+
+    protected static function parseStoredDate(?string $value): ?Carbon
+    {
+        if ($value === null || trim((string) $value) === '') {
+            return null;
+        }
+        $value = trim($value);
+        // 1. Canonical format (no ambiguity, no timezone shift)
+        $parsed = Carbon::createFromFormat('Y', $value);
+        if ($parsed !== false) {
+            return $parsed;
+        }
+        // 2. Excel serial number (e.g. "44927") – Carbon::parse would treat as Unix timestamp (wrong)
+        if (ctype_digit($value) || (str_starts_with($value, '-') && ctype_digit(substr($value, 1)))) {
+            $days = (int) $value;
+            if ($days >= 1 && $days <= 100000) {
+                return Carbon::create(1899, 12, 30)->addDays($days)->startOfDay();
+            }
+        }
+        // 3. Fallback for d/m/Y, d-m-Y, etc.
+        try {
+            return Carbon::parse($value);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /** Parsed birth_date for display (handles all stored formats). */
+    public function getParsedBirthDateAttribute(): ?Carbon
+    {
+        return static::parseStoredDate($this->attributes['birth_date'] ?? null);
+    }
+
+    /** Parsed death_date for display (handles all stored formats). */
+    public function getParsedDeathDateAttribute(): ?Carbon
+    {
+        return static::parseStoredDate($this->attributes['death_date'] ?? null);
+    }
 
     protected $attributes = [
         'is_alive' => true,
@@ -83,7 +123,7 @@ class FamilyMember extends Model
 
     public function hasChildByName(string $name): bool
     {
-        return $this->children()
+        return $this->allChildren()
             ->where('first_name', $name)
             ->exists();
     }

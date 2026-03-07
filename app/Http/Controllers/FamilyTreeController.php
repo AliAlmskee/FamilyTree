@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -10,26 +9,6 @@ use App\Models\FamilyMember;
 
 class FamilyTreeController extends Controller
 {
-    /**
-     * Normalize a date from Excel/input. Returns null if empty or if the date
-     * is "today" (common Excel placeholder / =TODAY()), so we don't store
-     * misleading birth/death dates.
-     */
-    private function normalizeDate($value): ?string
-    {
-        if ($value === null || $value === '' || (is_string($value) && trim($value) === '')) {
-            return null;
-        }
-        try {
-            $date = Carbon::parse($value);
-            if ($date->isToday()) {
-                return null;
-            }
-            return $date->format('Y-m-d');
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
     public function processToMap(Request $request)
     {
         $inputPath = "C:/Users/Ali-Almski/Desktop/input.xls";
@@ -108,25 +87,31 @@ class FamilyTreeController extends Controller
             }
 
             if (!empty($rowValues['تاريخ الميلاد'])) {
-                $currentPerson['birth_date'] = $this->normalizeDate($rowValues['تاريخ الميلاد']);
+                $currentPerson['birth_date'] ??= $rowValues['تاريخ الميلاد'];
             }
 
             if (!empty($rowValues['تاريخ الوفاة'])) {
-                $currentPerson['death_date'] = $this->normalizeDate($rowValues['تاريخ الوفاة']);
+                $currentPerson['death_date'] ??= $rowValues['تاريخ الوفاة'];
             }
 
             // wives
             if (!empty($rowValues['اسم الزوجه'])) {
                 if (!in_array($rowValues['اسم الزوجه'], $currentPerson['wives'])) {
-                    $currentPerson['wives'][] = $rowValues['اسم الزوجه'];
+                    $currentPerson['wives'][] = [
+                        'name'       => $rowValues['اسم الزوجه'],
+                        'birth_date' => $rowValues['تاريخ الميلاد'] ?? null,
+                        'death_date' => $rowValues['تاريخ الوفاة'] ?? null,
+                    ];
                 }
             }
 
             // children
             if (!empty($rowValues['الأولاد'])) {
                 $currentPerson['children'][] = [
-                    'name'   => $rowValues['الأولاد'],
-                    'gender' => $rowValues['الجنس'] ?? null,
+                    'name'       => $rowValues['الأولاد'],
+                    'gender'     => $rowValues['الجنس'] ?? null,
+                    'birth_date' => $rowValues['تاريخ الميلاد'] ?? null,
+                    'death_date' => $rowValues['تاريخ الوفاة'] ?? null,
                 ];
             }
             if (!empty($rowValues['اسم الام ']) && $rowValues['اسم الام '] != 0) {
@@ -176,8 +161,8 @@ class FamilyTreeController extends Controller
                         'father_id'  => null,
                         'mother_id'  => null,
                         'spouse_id'  => null,
-                        'birth_date' => $this->normalizeDate($p['birth_date'] ?? null),
-                        'death_date' => $this->normalizeDate($p['death_date'] ?? null),
+                        'birth_date' => $p['birth_date'] ?? null,
+                        'death_date' => $p['death_date'] ?? null,
                     ]);
 
                     $dbMap[$p['id']] = $member->id;
@@ -197,67 +182,60 @@ class FamilyTreeController extends Controller
                         ->update(['father_id' => $dbMap[$p['father_id']]]);
                 }
                
-                /**
-                 * PASS 3 — wives + children
-                 */
-                foreach ($persons as $p) {
+              /** PASS 3 — wives + children */
+        foreach ($persons as $p) {
 
-                    $fatherDbId = $dbMap[$p['id']] ?? null;
-                    if (!$fatherDbId) continue;
+            $fatherDbId = $dbMap[$p['id']] ?? null;
+            if (!$fatherDbId) continue;
 
-                    // wives
-                    foreach ($p['wives'] as $wifeName) {
+            // wives
+            foreach ($p['wives'] as $wife) {
 
-                        if (isset($nameIndex[$wifeName])) continue;
+                if (isset($nameIndex[$wife['name']])) continue;
 
-                        $wife = FamilyMember::create([
-                            'first_name' => $wifeName,
-                            'last_name'  => ' ',
-                            'gender'     => 'female',
-                            'father_id'  => null,
-                            'mother_id'  => null,
-                            'spouse_id'  => $fatherDbId,
-                            'address'    => null,
-                            'is_alive'   => true,
-                            'birth_date' => null,
-                            'death_date' => null,
-                        ]);
+                $wifeModel = FamilyMember::create([
+                    'first_name' => $wife['name'],
+                    'last_name'  => ' ',
+                    'gender'     => 'female',
+                    'father_id'  => null,
+                    'mother_id'  => null,
+                    'spouse_id'  => $fatherDbId,
+                    'address'    => null,
+                    'is_alive'   => empty($wife['death_date']),
+                    'birth_date' => $wife['birth_date'],
+                    'death_date' => $wife['death_date'],
+                ]);
 
-                        FamilyMember::where('id', $fatherDbId)
-                            ->update(['spouse_id' => $wife->id]);
+                FamilyMember::where('id', $fatherDbId)
+                    ->update(['spouse_id' => $wifeModel->id]);
 
-                        $nameIndex[$wifeName] = $wife->id;
-                    }
+                $nameIndex[$wife['name']] = $wifeModel->id;
+            }
 
-                    // children (SAFE LOGIC)
-                    foreach ($p['children'] as $child) {
+            // children
+            foreach ($p['children'] as $child) {
 
-                        $childName = $child['name'];
+                $childName = $child['name'];
+                $lookupKey = $childName . '_' . ($p['id'] ?? 0);
 
-                        // key to detect if child exists as real person in Excel
-                        $lookupKey = $childName . '_' . ($p['id'] ?? 0);
-
-                        if (isset($personIndex[$lookupKey])) {
-                            continue;
-                        }
-
-                        // otherwise create new child
-                        FamilyMember::create([
-                            'first_name' => $childName,
-                            'last_name'  => 'أبو جيب',
-                            'gender'     => ($child['gender'] ?? '') === 'أنثى'
-                                            ? 'female'
-                                            : 'male',
-                            'father_id'  => $fatherDbId,
-                            'mother_id'  => null,
-                            'spouse_id'  => null,
-                            'address'    => null,
-                            'is_alive'   => true,
-                            'birth_date' => null,
-                            'death_date' => null,
-                        ]);
-                    }
+                if (isset($personIndex[$lookupKey])) {
+                    continue;
                 }
+
+                FamilyMember::create([
+                    'first_name' => $childName,
+                    'last_name'  => 'أبو جيب',
+                    'gender'     => ($child['gender'] ?? '') === 'أنثى' ? 'female' : 'male',
+                    'father_id'  => $fatherDbId,
+                    'mother_id'  => null,
+                    'spouse_id'  => null,
+                    'address'    => null,
+                    'is_alive'   => empty($child['death_date']),
+                    'birth_date' => $child['birth_date'],
+                    'death_date' => $child['death_date'],
+                ]);
+            }
+        }
 
              /**
              * PASS 5 — set mother_id based on father's spouse

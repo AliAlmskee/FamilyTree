@@ -70,7 +70,7 @@
                         <div class="flex items-center">
                             <i class="fas fa-birthday-cake text-gray-500 w-6"></i>
                             <span class="text-gray-700 mr-3 font-semibold">تاريخ الميلاد:</span>
-                            <span class="text-gray-800">{{ ($member->birth_date && !\Carbon\Carbon::parse($member->birth_date)->isToday()) ? \Carbon\Carbon::parse($member->birth_date)->format('Y') : 'غير معروف' }}</span>
+                            <span class="text-gray-800">{{ $member->parsed_birth_date?->format('Y') ?? 'غير معروف' }}</span>
                         </div>
                     </div>
                     <!-- Life Status -->
@@ -84,7 +84,7 @@
                         <div class="flex items-center">
                             <i class="fas fa-calendar-times text-gray-500 w-6"></i>
                             <span class="text-gray-700 mr-3 font-semibold">تاريخ الوفاة:</span>
-                            <span class="text-gray-800">{{ $member->death_date ? \Carbon\Carbon::parse($member->death_date)->format('d-m-Y') : 'غير معروف' }}</span>
+                            <span class="text-gray-800">{{ $member->parsed_death_date?->format('Y') ?? 'غير معروف' }}</span>
                         </div>
                         @endif
                     </div>

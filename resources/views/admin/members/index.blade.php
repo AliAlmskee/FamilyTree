@@ -170,7 +170,7 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $member->created_at->format('Y-m-d') }}
+                                        {{ $member->created_at->format('Y') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2 space-x-reverse">
