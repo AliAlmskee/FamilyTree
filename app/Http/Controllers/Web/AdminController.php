@@ -130,8 +130,8 @@ class AdminController extends Controller
     public function memberEdit($id)
     {
         $member = FamilyMember::with(['father', 'mother', 'spouse'])->findOrFail($id);
-        $potentialParents = FamilyMember::where('id', '!=', $id)->get();
-        $potentialSpouses = FamilyMember::where('id', '!=', $id)->get();
+        $potentialParents = FamilyMember::with('father')->where('id', '!=', $id)->get();
+        $potentialSpouses = FamilyMember::with('father')->where('id', '!=', $id)->get();
         
         return view('admin.members.edit', compact('member', 'potentialParents', 'potentialSpouses'));
     }
@@ -159,8 +159,8 @@ class AdminController extends Controller
 
     public function memberCreate(Request $request)
     {
-        $potentialParents = FamilyMember::all();
-        $potentialSpouses = FamilyMember::all();
+        $potentialParents = FamilyMember::with('father')->get();
+        $potentialSpouses = FamilyMember::with('father')->get();
         $parentId = $request->get('parent_id');
         $parent = null;
         

@@ -121,6 +121,22 @@ class FamilyMember extends Model
         return $byFather->merge($byMother)->unique('id')->sortBy('birth_date')->values();
     }
 
+    /**
+     * Display name: first name, then father's first name, then last name.
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        $parts = [$this->first_name];
+        if ($this->relationLoaded('father') && $this->father) {
+            $parts[] = $this->father->first_name;
+        } elseif ($this->father_id) {
+            $parts[] = self::find($this->father_id)?->first_name ?? '';
+        }
+        $parts[] = $this->last_name;
+
+        return implode(' ', array_filter($parts));
+    }
+
     public function hasChildByName(string $name): bool
     {
         return $this->allChildren()

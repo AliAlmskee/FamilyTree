@@ -82,13 +82,14 @@
                         
                         <div>
                             <label for="father_id" class="block text-sm font-medium text-gray-700 mb-2">الأب</label>
-                            <select name="father_id" id="father_id" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('father_id') border-red-500 @enderror">
+                            <input type="text" id="father_id_search" placeholder="بحث..." class="w-full px-3 py-2 border border-gray-300 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-0">
+                            <select name="father_id" id="father_id" data-search-input="father_id_search"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('father_id') border-red-500 @enderror">
                                 <option value="">اختر الأب</option>
                                 @foreach($potentialParents as $parent)
                                     @if($parent->gender === 'male' && $parent->id !== $member->id)
                                         <option value="{{ $parent->id }}" {{ old('father_id', $member->father_id) == $parent->id ? 'selected' : '' }}>
-                                            {{ $parent->first_name }} {{ $parent->last_name }}
+                                            {{ $parent->display_name }}
                                         </option>
                                     @endif
                                 @endforeach
@@ -100,13 +101,14 @@
                         
                         <div>
                             <label for="mother_id" class="block text-sm font-medium text-gray-700 mb-2">الأم</label>
-                            <select name="mother_id" id="mother_id" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('mother_id') border-red-500 @enderror">
+                            <input type="text" id="mother_id_search" placeholder="بحث..." class="w-full px-3 py-2 border border-gray-300 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-0">
+                            <select name="mother_id" id="mother_id" data-search-input="mother_id_search"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('mother_id') border-red-500 @enderror">
                                 <option value="">اختر الأم</option>
                                 @foreach($potentialParents as $parent)
                                     @if($parent->gender === 'female' && $parent->id !== $member->id)
                                         <option value="{{ $parent->id }}" {{ old('mother_id', $member->mother_id) == $parent->id ? 'selected' : '' }}>
-                                            {{ $parent->first_name }} {{ $parent->last_name }}
+                                            {{ $parent->display_name }}
                                         </option>
                                     @endif
                                 @endforeach
@@ -118,13 +120,14 @@
                         
                         <div>
                             <label for="spouse_id" class="block text-sm font-medium text-gray-700 mb-2">الزوج/الزوجة</label>
-                            <select name="spouse_id" id="spouse_id" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('spouse_id') border-red-500 @enderror">
+                            <input type="text" id="spouse_id_search" placeholder="بحث..." class="w-full px-3 py-2 border border-gray-300 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-0">
+                            <select name="spouse_id" id="spouse_id" data-search-input="spouse_id_search"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('spouse_id') border-red-500 @enderror">
                                 <option value="">اختر الزوج/الزوجة</option>
                                 @foreach($potentialSpouses as $spouse)
                                     @if($spouse->id !== $member->id)
                                         <option value="{{ $spouse->id }}" {{ old('spouse_id', $member->spouse_id) == $spouse->id ? 'selected' : '' }}>
-                                            {{ $spouse->first_name }} {{ $spouse->last_name }}
+                                            {{ $spouse->display_name }}
                                         </option>
                                     @endif
                                 @endforeach
@@ -192,4 +195,52 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('select[data-search-input]').forEach(function(select) {
+        var searchInput = document.getElementById(select.getAttribute('data-search-input'));
+        if (!searchInput) return;
+
+        var allOptions = [];
+        select.querySelectorAll('option').forEach(function(opt) {
+            if (opt.value !== '') {
+                allOptions.push({ value: opt.value, text: opt.textContent.trim() });
+            }
+        });
+
+        function applyFilter() {
+            var q = searchInput.value.trim().toLowerCase();
+            var currentValue = select.value;
+            var currentOpt = allOptions.find(function(o) { return o.value === currentValue; });
+            select.innerHTML = '';
+            var emptyOpt = document.createElement('option');
+            emptyOpt.value = '';
+            emptyOpt.textContent = select.id === 'father_id' ? 'اختر الأب' : (select.id === 'mother_id' ? 'اختر الأم' : 'اختر الزوج/الزوجة');
+            select.appendChild(emptyOpt);
+            var addedCurrent = false;
+            allOptions.forEach(function(opt) {
+                if (q === '' || opt.text.toLowerCase().indexOf(q) !== -1) {
+                    var o = document.createElement('option');
+                    o.value = opt.value;
+                    o.textContent = opt.text;
+                    if (opt.value === currentValue) { o.selected = true; addedCurrent = true; }
+                    select.appendChild(o);
+                }
+            });
+            if (currentValue && !addedCurrent && currentOpt) {
+                var o = document.createElement('option');
+                o.value = currentOpt.value;
+                o.textContent = currentOpt.text;
+                o.selected = true;
+                select.appendChild(o);
+            }
+        }
+
+        searchInput.addEventListener('input', applyFilter);
+    });
+});
+</script>
+@endpush
 @endsection 
