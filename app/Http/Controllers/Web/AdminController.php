@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\RequireSitePassword;
+use App\Models\Configuration;
 use App\Models\News;
 use App\Models\FamilyMember;
 use App\Models\User;
@@ -272,5 +274,28 @@ class AdminController extends Controller
         $user->delete();
 
         return redirect()->back()->with('success', 'تم حذف المستخدم بنجاح');
+    }
+
+    // Site settings: site access password (configuration)
+    public function settings()
+    {
+        $sitePassword = Configuration::get(RequireSitePassword::CONFIG_KEY);
+        return view('admin.settings', compact('sitePassword'));
+    }
+
+    public function settingsUpdate(Request $request)
+    {
+        $request->validate([
+            'site_password' => 'nullable|string|min:1|max:255',
+        ]);
+
+        $value = $request->filled('site_password') ? $request->site_password : null;
+        Configuration::set(RequireSitePassword::CONFIG_KEY, $value);
+
+        $message = $value
+            ? 'تم تعيين كلمة مرور الدخول للموقع بنجاح'
+            : 'تم إلغاء كلمة مرور الدخول للموقع (الموقع مفتوح للجميع)';
+
+        return redirect()->route('admin.settings')->with('success', $message);
     }
 } 

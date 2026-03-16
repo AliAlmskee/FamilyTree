@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\FamilyTreeImportWebController;
 use App\Http\Controllers\Web\NewsController;
 use App\Http\Controllers\Web\AdminController;
 use App\Http\Controllers\Web\AuthWebController;
+use App\Http\Controllers\Web\SiteGateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,10 @@ use App\Http\Controllers\Web\AuthWebController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// Site gate: visitors must enter site password if one is set
+Route::get('/site-gate', [SiteGateController::class, 'show'])->name('site-gate');
+Route::post('/site-gate', [SiteGateController::class, 'verify'])->name('site-gate.post');
 
 // Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -69,6 +74,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/members/{id}', [AdminController::class, 'memberUpdate'])->name('members.update');
     Route::delete('/members/{id}', [AdminController::class, 'memberDelete'])->name('members.delete');
     
+    // Settings (site password in configurations table)
+    Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+    Route::put('/settings', [AdminController::class, 'settingsUpdate'])->name('settings.update');
+
     // User Management
     Route::get('/users', [AdminController::class, 'usersIndex'])->name('users.index');
     Route::get('/users/create', [AdminController::class, 'userCreate'])->name('users.create');

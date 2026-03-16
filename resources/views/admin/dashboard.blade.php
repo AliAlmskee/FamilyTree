@@ -135,6 +135,13 @@
     <div class="bg-white rounded-lg shadow-md p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">روابط سريعة</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{{ route('admin.settings') }}" class="flex items-center p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors">
+                <i class="fas fa-cog text-amber-600 text-xl ml-3"></i>
+                <div>
+                    <h4 class="font-medium text-gray-900">إعدادات الموقع</h4>
+                    <p class="text-sm text-gray-600">كلمة مرور الدخول للموقع</p>
+                </div>
+            </a>
             <a href="{{ route('admin.news.index') }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                 <i class="fas fa-newspaper text-blue-600 text-xl ml-3"></i>
                 <div>

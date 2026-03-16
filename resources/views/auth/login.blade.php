@@ -61,14 +61,6 @@
                     تسجيل الدخول
                 </button>
             </div>
-
-            <div class="text-center">
-                <p class="text-sm text-gray-600">
-                    بيانات تسجيل الدخول الافتراضية للمدير:<br>
-                    البريد الإلكتروني: admin@aboujaib.com<br>
-                    كلمة المرور: admin123
-                </p>
-            </div>
         </form>
     </div>
 </div>

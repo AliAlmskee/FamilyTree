@@ -163,6 +163,7 @@
                         </div>
                     </div>
                 @endif
+                @endif
                 
                 <!-- Add Child Section -->
                 <div class="mt-6 space-y-4">
