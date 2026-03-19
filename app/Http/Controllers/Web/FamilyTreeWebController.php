@@ -30,7 +30,7 @@ class FamilyTreeWebController extends Controller
 
     public function show($id)
     {
-        $member = FamilyMember::with(['father', 'mother', 'spouse', 'children', 'childrenByMother'])
+        $member = FamilyMember::with(['father', 'mother', 'spouse', 'children', 'childrenByMother', 'countries'])
                     ->findOrFail($id);
 
         return view('family-tree.show', compact('member'));

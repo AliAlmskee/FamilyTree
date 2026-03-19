@@ -73,6 +73,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/members/{id}/edit', [AdminController::class, 'memberEdit'])->name('members.edit');
     Route::put('/members/{id}', [AdminController::class, 'memberUpdate'])->name('members.update');
     Route::delete('/members/{id}', [AdminController::class, 'memberDelete'])->name('members.delete');
+    Route::post('/members/{id}/countries', [AdminController::class, 'memberCountryStore'])->name('members.countries.store');
+    Route::delete('/members/{id}/countries/{country}', [AdminController::class, 'memberCountryDestroy'])->name('members.countries.destroy');
     
     // Settings (site password in configurations table)
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');

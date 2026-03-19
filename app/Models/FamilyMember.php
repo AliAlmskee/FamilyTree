@@ -88,6 +88,13 @@ class FamilyMember extends Model
         return $this->belongsTo(FamilyMember::class, 'spouse_id');
     }
 
+    public function countries()
+    {
+        return $this->belongsToMany(Country::class, 'country_family_member')
+            ->withTimestamps()
+            ->orderBy('countries.name');
+    }
+
     public function children()
     {
         return $this->hasMany(FamilyMember::class, 'father_id');

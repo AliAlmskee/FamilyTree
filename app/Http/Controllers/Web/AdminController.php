@@ -7,6 +7,7 @@ use App\Http\Middleware\RequireSitePassword;
 use App\Models\Configuration;
 use App\Models\News;
 use App\Models\FamilyMember;
+use App\Models\Country;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -129,11 +130,59 @@ class AdminController extends Controller
 
     public function memberEdit($id)
     {
-        $member = FamilyMember::with(['father', 'mother', 'spouse'])->findOrFail($id);
+        $member = FamilyMember::with(['father', 'mother', 'spouse', 'countries'])->findOrFail($id);
         $potentialParents = FamilyMember::with('father')->where('id', '!=', $id)->get();
         $potentialSpouses = FamilyMember::with('father')->where('id', '!=', $id)->get();
-        
-        return view('admin.members.edit', compact('member', 'potentialParents', 'potentialSpouses'));
+        $allCountries = Country::orderBy('name')->get();
+
+        return view('admin.members.edit', compact('member', 'potentialParents', 'potentialSpouses', 'allCountries'));
+    }
+
+    public function memberCountryStore(Request $request, $id)
+    {
+        $member = FamilyMember::findOrFail($id);
+
+        if ($request->filled('country_id')) {
+            $request->validate([
+                'country_id' => 'required|exists:countries,id',
+            ]);
+            $country = Country::findOrFail($request->country_id);
+            $member->countries()->syncWithoutDetaching([$country->id]);
+
+            return redirect()->route('admin.members.edit', $member->id)->with('success', 'تم ربط الدولة بالعضو بنجاح');
+        }
+
+        $request->validate([
+            'country_name' => 'required|string|max:255',
+            'flag' => 'required|image|max:4096',
+        ]);
+
+        $path = $request->file('flag')->store('member_flags', 'public');
+
+        $country = Country::where('name', $request->country_name)->first();
+        if ($country) {
+            if ($country->flag_path && Storage::disk('public')->exists($country->flag_path)) {
+                Storage::disk('public')->delete($country->flag_path);
+            }
+            $country->update(['flag_path' => $path]);
+        } else {
+            $country = Country::create([
+                'name' => $request->country_name,
+                'flag_path' => $path,
+            ]);
+        }
+
+        $member->countries()->syncWithoutDetaching([$country->id]);
+
+        return redirect()->route('admin.members.edit', $member->id)->with('success', 'تم إضافة الدولة والعلم وربطها بالعضو بنجاح');
+    }
+
+    public function memberCountryDestroy($id, Country $country)
+    {
+        $member = FamilyMember::findOrFail($id);
+        $member->countries()->detach($country->id);
+
+        return redirect()->route('admin.members.edit', $member->id)->with('success', 'تم إلغاء ربط الدولة بهذا العضو');
     }
 
     public function memberUpdate(Request $request, $id)

@@ -37,7 +37,14 @@
         <div class="pt-20 pb-8 px-8">
             <div class="flex justify-between items-start">
                 <div>
-                    <h1 class="text-4xl font-bold text-gray-900">{{ $member->first_name }} {{ $member->last_name }}</h1>
+                    <h1 class="text-4xl font-bold text-gray-900 flex flex-wrap items-center gap-2">
+                        <span>{{ $member->first_name }} {{ $member->last_name }}</span>
+                        @foreach($member->countries as $country)
+                            @if($country->flag_path)
+                                <img src="{{ $country->flag_url }}" alt="{{ $country->name }}" title="{{ $country->name }}" class="h-8 w-auto rounded shadow-sm border border-gray-200 inline-block align-middle">
+                            @endif
+                        @endforeach
+                    </h1>
                     @if($member->maiden_name)
                         <p class="text-xl text-gray-500 mt-1">({{ $member->maiden_name }})</p>
                     @endif

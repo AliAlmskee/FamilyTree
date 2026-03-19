@@ -192,6 +192,92 @@
                     </button>
                 </div>
             </form>
+
+            <!-- Countries & flags (separate forms) -->
+            <div class="mt-8 border-t border-gray-200 pt-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">الدول والأعلام</h3>
+                <p class="text-sm text-gray-600 mb-4">يظهر العلم بجانب اسم الشخص في صفحة الملف الشخصي.</p>
+
+                @if($member->countries->count() > 0)
+                <div class="mb-6 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">العلم</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">الدولة</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 w-24"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($member->countries as $country)
+                            <tr>
+                                <td class="px-4 py-2">
+                                    @if($country->flag_path)
+                                        <img src="{{ $country->flag_url }}" alt="{{ $country->name }}" class="h-8 w-auto rounded shadow-sm border border-gray-100">
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 text-gray-900">{{ $country->name }}</td>
+                                <td class="px-4 py-2">
+                                    <form action="{{ route('admin.members.countries.destroy', [$member->id, $country->id]) }}" method="POST" class="inline" onsubmit="return confirm('إلغاء ربط هذه الدولة بهذا العضو؟');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-sm">إلغاء الربط</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @endif
+
+                @php
+                    $availableCountries = $allCountries->whereNotIn('id', $member->countries->pluck('id'));
+                @endphp
+                @if($availableCountries->count() > 0)
+                <form action="{{ route('admin.members.countries.store', $member->id) }}" method="POST" class="bg-indigo-50 p-4 rounded-lg max-w-xl mb-4">
+                    @csrf
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">ربط دولة موجودة</h4>
+                    <div class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-[200px]">
+                            <label for="country_id" class="block text-xs text-gray-600 mb-1">الدولة</label>
+                            <select name="country_id" id="country_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500">
+                                @foreach($availableCountries as $c)
+                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm">ربط</button>
+                    </div>
+                </form>
+                @endif
+
+                <form action="{{ route('admin.members.countries.store', $member->id) }}" method="POST" enctype="multipart/form-data" class="bg-gray-50 p-4 rounded-lg max-w-xl">
+                    @csrf
+                    <h4 class="text-sm font-semibold text-gray-800 mb-3">إضافة دولة جديدة وربطها بالعضو</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="country_name" class="block text-sm font-medium text-gray-700 mb-1">اسم الدولة</label>
+                            <input type="text" name="country_name" id="country_name" value="{{ old('country_name') }}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 @error('country_name') border-red-500 @enderror">
+                            @error('country_name')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="flag" class="block text-sm font-medium text-gray-700 mb-1">صورة العلم</label>
+                            <input type="file" name="flag" id="flag" accept="image/*" required
+                                   class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 @error('flag') border border-red-500 rounded @enderror">
+                            @error('flag')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm">
+                        <i class="fas fa-plus ml-1"></i> إضافة دولة
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
