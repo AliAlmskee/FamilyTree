@@ -74,6 +74,27 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div>
+                            <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-2">تاريخ الميلاد</label>
+                            <input type="text" name="birth_date" id="birth_date" value="{{ old('birth_date', $member->birth_date) }}"
+                                   placeholder="مثال: 1980 أو 1980-05-15"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('birth_date') border-red-500 @enderror">
+                            @error('birth_date')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">يمكن إدخال السنة فقط أو تاريخ كامل حسب ما يدعمه النظام.</p>
+                        </div>
+
+                        <div>
+                            <label for="death_date" class="block text-sm font-medium text-gray-700 mb-2">تاريخ الوفاة</label>
+                            <input type="text" name="death_date" id="death_date" value="{{ old('death_date', $member->death_date) }}"
+                                   placeholder="يُترك فارغاً إن كان على قيد الحياة"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('death_date') border-red-500 @enderror">
+                            @error('death_date')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                     
                     <!-- Family Relationships -->
