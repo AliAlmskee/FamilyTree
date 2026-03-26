@@ -10,6 +10,7 @@ use App\Models\FamilyMember;
 use App\Models\Country;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -202,8 +203,15 @@ class AdminController extends Controller
             'spouse_id' => 'nullable|exists:family_members,id',
         ]);
 
-        $member = FamilyMember::findOrFail($id);
-        $member->update($request->all());
+        DB::transaction(function () use ($request, $id) {
+            $member = FamilyMember::lockForUpdate()->findOrFail($id);
+            $previousSpouseId = $member->spouse_id !== null && $member->spouse_id !== ''
+                ? (int) $member->spouse_id
+                : null;
+            $member->update($request->all());
+            $member->refresh();
+            FamilyMember::applyBidirectionalSpouse($member, $previousSpouseId);
+        });
 
         return redirect()->route('admin.members.index')->with('success', 'تم تحديث معلومات العضو بنجاح');
     }
@@ -239,7 +247,10 @@ class AdminController extends Controller
             'spouse_id' => 'nullable|exists:family_members,id',
         ]);
 
-        FamilyMember::create($request->all());
+        DB::transaction(function () use ($request) {
+            $member = FamilyMember::create($request->all());
+            FamilyMember::applyBidirectionalSpouse($member, null);
+        });
 
         $message = 'تم إضافة العضو الجديد بنجاح';
         if ($request->filled('father_id') || $request->filled('mother_id')) {

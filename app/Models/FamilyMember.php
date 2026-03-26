@@ -73,6 +73,56 @@ class FamilyMember extends Model
         'is_alive' => true,
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (FamilyMember $member) {
+            if ($member->spouse_id) {
+                static::query()
+                    ->whereKey($member->spouse_id)
+                    ->where('spouse_id', $member->id)
+                    ->update(['spouse_id' => null]);
+            }
+        });
+    }
+
+    /**
+     * After spouse_id is saved on this member, set the partner's spouse_id to this member
+     * and clear any stale reciprocal links.
+     *
+     * @param  int|null  $previousSpouseId  spouse_id before this save (null on create)
+     */
+    public static function applyBidirectionalSpouse(FamilyMember $member, ?int $previousSpouseId): void
+    {
+        $memberId = (int) $member->id;
+        $newSpouseId = $member->spouse_id !== null && $member->spouse_id !== ''
+            ? (int) $member->spouse_id
+            : null;
+
+        if ($newSpouseId === $memberId) {
+            $member->update(['spouse_id' => null]);
+
+            return;
+        }
+
+        if ($previousSpouseId !== null && $previousSpouseId !== $newSpouseId) {
+            static::query()
+                ->whereKey($previousSpouseId)
+                ->where('spouse_id', $memberId)
+                ->update(['spouse_id' => null]);
+        }
+
+        if ($newSpouseId) {
+            $partner = static::lockForUpdate()->find($newSpouseId);
+            if ($partner && $partner->spouse_id && (int) $partner->spouse_id !== $memberId) {
+                static::query()
+                    ->whereKey($partner->spouse_id)
+                    ->where('spouse_id', $partner->id)
+                    ->update(['spouse_id' => null]);
+            }
+            static::query()->whereKey($newSpouseId)->update(['spouse_id' => $memberId]);
+        }
+    }
+
     public function mother()
     {
         return $this->belongsTo(FamilyMember::class, 'mother_id');
