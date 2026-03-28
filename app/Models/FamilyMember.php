@@ -86,8 +86,10 @@ class FamilyMember extends Model
     }
 
     /**
-     * After spouse_id is saved on this member, set the partner's spouse_id to this member
-     * and clear any stale reciprocal links.
+     * After spouse_id is saved on this member, set the partner's spouse_id to this member,
+     * clear any stale reciprocal links, and set this member's children's other parent to the
+     * new spouse when that side was empty or still pointed at the previous spouse; and the same
+     * for the partner's children pointing back at this member.
      *
      * @param  int|null  $previousSpouseId  spouse_id before this save (null on create)
      */
@@ -113,6 +115,15 @@ class FamilyMember extends Model
 
         if ($newSpouseId) {
             $partner = static::lockForUpdate()->find($newSpouseId);
+            $partnerPreviousSpouseId = null;
+            if ($partner) {
+                $pid = $partner->spouse_id !== null && $partner->spouse_id !== ''
+                    ? (int) $partner->spouse_id
+                    : null;
+                if ($pid !== null && $pid !== $memberId) {
+                    $partnerPreviousSpouseId = $pid;
+                }
+            }
             if ($partner && $partner->spouse_id && (int) $partner->spouse_id !== $memberId) {
                 static::query()
                     ->whereKey($partner->spouse_id)
@@ -120,6 +131,44 @@ class FamilyMember extends Model
                     ->update(['spouse_id' => null]);
             }
             static::query()->whereKey($newSpouseId)->update(['spouse_id' => $memberId]);
+
+            static::linkChildrenOtherParent($memberId, (string) $member->gender, $newSpouseId, $previousSpouseId);
+            if ($partner) {
+                static::linkChildrenOtherParent($newSpouseId, (string) $partner->gender, $memberId, $partnerPreviousSpouseId);
+            }
+        }
+    }
+
+    /**
+     * For children where $parentId is father (male) or mother (female), set the other parent to
+     * $otherParentId when that field is null or still references a former spouse of $parentId.
+     */
+    private static function linkChildrenOtherParent(
+        int $parentId,
+        string $parentGender,
+        int $otherParentId,
+        ?int $priorOtherParentOnChild
+    ): void {
+        if ($parentGender === 'male') {
+            static::query()
+                ->where('father_id', $parentId)
+                ->where(function ($q) use ($priorOtherParentOnChild) {
+                    $q->whereNull('mother_id');
+                    if ($priorOtherParentOnChild !== null) {
+                        $q->orWhere('mother_id', $priorOtherParentOnChild);
+                    }
+                })
+                ->update(['mother_id' => $otherParentId]);
+        } elseif ($parentGender === 'female') {
+            static::query()
+                ->where('mother_id', $parentId)
+                ->where(function ($q) use ($priorOtherParentOnChild) {
+                    $q->whereNull('father_id');
+                    if ($priorOtherParentOnChild !== null) {
+                        $q->orWhere('father_id', $priorOtherParentOnChild);
+                    }
+                })
+                ->update(['father_id' => $otherParentId]);
         }
     }
 
